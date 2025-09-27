@@ -1,0 +1,6 @@
+pandas
+scikit-learn
+mlflow
+azureml-mlflow
+joblib
+pytest
