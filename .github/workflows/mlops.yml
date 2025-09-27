@@ -1,0 +1,45 @@
+name: Churn Model CI/CD
+
+# This 'on' block is the trigger. It was missing or indented incorrectly.
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.8'
+
+      - name: Install dependencies and Run Tests
+        run: |
+          pip install -r requirements.txt
+          pytest tests/
+
+  train-and-register:
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Connect to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Install Azure ML CLI
+        run: az extension add -n ml -y
+
+      - name: Run training job and register model
+        run: |
+          az ml job create --file azure-ml/train-job.yml --resource-group MLOps-Project-RG --workspace-name Churn-Prediction-Workspace --web
