@@ -1,0 +1,20 @@
+# azure-ml/train-job.yml
+$schema: https://azuremlschemas.azureedge.net/latest/commandJob.schema.json
+code: ../src  # Path to your source code folder
+command: >-
+  python train.py 
+  --input_data ${{inputs.data_path}}
+inputs:
+  data_path: 
+    type: uri_file
+    # This path points to a dataset you will register in Azure ML later.
+    # The format is azureml:<dataset_name>:<version>
+    path: azureml:churn-data-unlabeled:1 
+outputs:
+  model_output_path:
+    type: mlflow_model
+# This points to an environment you will register later from your conda.yml
+environment: azureml:churn-prediction-env:1 
+compute: azureml:cpu-cluster # The name of the cluster you just created
+display_name: train-churn-prediction-model
+experiment_name: churn-prediction
